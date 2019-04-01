@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Execise Helper</string>
+    <string name="app_name">Exercise Helper</string>
     <string name="labelEndExercise">Terminar ejercicio</string>
     <string name="labelEndSerie">terminar serie</string>
     <string name="textDefaultTime">00:00</string>
@@ -7,4 +7,5 @@
     <string name="textDefaultRepetitions">0</string>
     <string name="textSeries">Series:</string>
     <string name="textDefatultSeries">0</string>
+    <string name="labelReset">reiniciar</string>
 </resources>
