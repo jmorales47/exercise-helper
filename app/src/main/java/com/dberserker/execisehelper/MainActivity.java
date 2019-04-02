@@ -1,5 +1,7 @@
 package com.dberserker.execisehelper;
 
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,15 +12,17 @@ import android.widget.TextView;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int DEFAULT_REPETITION_REST_TIME = 5;
-    private static final int DEFAULT_SERIE_REST_TIME = 10;
+    private static final int DEFAULT_REPETITION_REST_TIME = 30;
+    private static final int DEFAULT_SERIE_REST_TIME = 60;
     private Handler handler;
     private Runnable currentTask;
     private TextView timerTextView;
+    private SoundPool soundPool;
     private boolean taskRunning = false;
     private int currentTimerValue;
     private int currentRepetitions = 0;
     private int currentSeries = 0;
+    private int idNotificacion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
         buttonRepetition.setOnClickListener( eventButtonRepetition());
         buttonSerie.setOnClickListener( eventButtonSerie() );
         buttonReset.setOnClickListener( eventButtonReset() );
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        idNotificacion = soundPool.load(getApplicationContext(), R.raw.notification, 0);
         handler = new Handler();
         timerTextView = findViewById(R.id.textViewTimer);
     }
@@ -93,10 +99,12 @@ public class MainActivity extends AppCompatActivity {
                     taskRunning = false;
                     timerTextView.setText( timeToString(currentTimerValue) );
                     TextView repetitionTextView = findViewById(R.id.textViewRepetitions);
+                    soundPool.play(idNotificacion, 1, 1, 1, 0, 1);
                     repetitionTextView.setText( String.valueOf(currentRepetitions) );
                     handler.removeCallbacks(this);
-                }else
+                }else {
                     handler.postDelayed(this, 1000);
+                }
             }
         };
     }
@@ -116,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
                     TextView serieTextView = findViewById(R.id.textViewSeries);
                     repetitionTextView.setText( String.valueOf(currentRepetitions) );
                     serieTextView.setText( String.valueOf(currentSeries) );
+                    soundPool.play(idNotificacion, 1, 1, 1, 0, 1);
                     handler.removeCallbacks(this);
-                }else
+                }else {
                     handler.postDelayed(this, 1000);
+                }
             }
         };
     }
