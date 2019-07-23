@@ -5,10 +5,16 @@ import android.media.SoundPool;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,8 +23,12 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
     private Runnable currentTask;
     private TextView timerTextView;
+    private TextView startTimeTextView;
+    private TextView lastExcerciseTimeTextView;
     private SoundPool soundPool;
+    private DateFormat timeFormatter = new SimpleDateFormat("HH:mm");
     private boolean taskRunning = false;
+    private boolean started = false;
     private int currentTimerValue;
     private int currentRepetitions = 0;
     private int currentSeries = 0;
@@ -28,25 +38,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Button buttonRepetition = findViewById(R.id.buttonRepetition);
-        final Button buttonSerie = findViewById(R.id.buttonSerie);
+        final Button buttonSerie = findViewById(R.id.buttonRepetition);
+        final Button buttonExercise = findViewById(R.id.buttonSerie);
         final Button buttonReset = findViewById(R.id.buttonReset);
-        buttonRepetition.setOnClickListener( eventButtonRepetition());
-        buttonSerie.setOnClickListener( eventButtonSerie() );
+        buttonSerie.setOnClickListener( eventButtonSerie());
+        buttonExercise.setOnClickListener( eventButtonExercise() );
         buttonReset.setOnClickListener( eventButtonReset() );
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
         idNotificacion = soundPool.load(getApplicationContext(), R.raw.notification, 0);
         handler = new Handler();
         timerTextView = findViewById(R.id.textViewTimer);
+        startTimeTextView = findViewById(R.id.textViewStartTime);
+        lastExcerciseTimeTextView = findViewById(R.id.textViewLastExercise);
     }
 
-    private View.OnClickListener eventButtonRepetition(){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_app, menu);
+        return true;
+    }
+
+    private View.OnClickListener eventButtonSerie(){
         return new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 if( !taskRunning) {
+                    if(!started) {
+                        started = true;
+                        startTimeTextView.setText(timeFormatter.format(new Date()));
+                        lastExcerciseTimeTextView.setText(timeFormatter.format(new Date()));
+                    }
+                    lastExcerciseTimeTextView.setText(timeFormatter.format(new Date()));
                     taskRunning = true;
-                    currentTask = taskRepetition();
+                    currentTask = taskSerie();
                     currentTimerValue = DEFAULT_REPETITION_REST_TIME;
                     timerTextView.setText(timeToString(currentTimerValue));
                     handler.removeCallbacks(currentTask);
@@ -56,13 +81,17 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private View.OnClickListener eventButtonSerie(){
+    private View.OnClickListener eventButtonExercise(){
         return new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 if( !taskRunning) {
+                    lastExcerciseTimeTextView.setText(timeFormatter.format(new Date()));
+                    currentRepetitions++;
+                    TextView repetitionTextView = findViewById(R.id.textViewRepetitions);
+                    repetitionTextView.setText( String.valueOf(currentRepetitions) );
                     taskRunning = true;
-                    currentTask = taskSerie();
+                    currentTask = taskExercise();
                     currentTimerValue = DEFAULT_SERIE_REST_TIME;
                     timerTextView.setText(timeToString(currentTimerValue));
                     handler.removeCallbacks(currentTask);
@@ -83,12 +112,15 @@ public class MainActivity extends AppCompatActivity {
                     serieTextView.setText("0");
                     currentRepetitions = 0;
                     currentSeries = 0;
+                    started = false;
+                    startTimeTextView.setText("00:00");
+                    lastExcerciseTimeTextView.setText("00:00");
                 }
             }
         };
     }
 
-    private Runnable taskRepetition(){
+    private Runnable taskSerie(){
         return new Runnable() {
             @Override
             public void run() {
@@ -109,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private Runnable taskSerie(){
+    private Runnable taskExercise(){
         return new Runnable() {
             @Override
             public void run() {
