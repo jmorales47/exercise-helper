@@ -15,6 +15,7 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView timerTextView;
     private TextView startTimeTextView;
     private TextView lastExcerciseTimeTextView;
+    private TextView timeElapseTextView;
     private SoundPool soundPool;
     private DateFormat timeFormatter = new SimpleDateFormat("HH:mm");
     private boolean taskRunning = false;
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private int currentRepetitions = 0;
     private int currentSeries = 0;
     private int idNotificacion;
+    private Date initialTime;
+    private Date endingTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         timerTextView = findViewById(R.id.textViewTimer);
         startTimeTextView = findViewById(R.id.textViewStartTime);
         lastExcerciseTimeTextView = findViewById(R.id.textViewLastExercise);
+        timeElapseTextView = findViewById(R.id.textViewTimeElapse);
     }
 
     @Override
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
                     if(!started) {
                         started = true;
                         startTimeTextView.setText(timeFormatter.format(new Date()));
+                        initialTime = new Date();
                         lastExcerciseTimeTextView.setText(timeFormatter.format(new Date()));
                     }
                     lastExcerciseTimeTextView.setText(timeFormatter.format(new Date()));
@@ -133,6 +139,9 @@ public class MainActivity extends AppCompatActivity {
                     TextView repetitionTextView = findViewById(R.id.textViewRepetitions);
                     soundPool.play(idNotificacion, 1, 1, 1, 0, 1);
                     repetitionTextView.setText( String.valueOf(currentRepetitions) );
+                    endingTime = new Date();
+                    long timeElapse = endingTime.getTime() - initialTime.getTime();
+                    timeElapseTextView.setText(timeToString(timeElapse/1000));
                     handler.removeCallbacks(this);
                 }else {
                     handler.postDelayed(this, 1000);
@@ -157,6 +166,9 @@ public class MainActivity extends AppCompatActivity {
                     repetitionTextView.setText( String.valueOf(currentRepetitions) );
                     serieTextView.setText( String.valueOf(currentSeries) );
                     soundPool.play(idNotificacion, 1, 1, 1, 0, 1);
+                    endingTime = new Date();
+                    long timeElapse = endingTime.getTime() - initialTime.getTime();
+                    timeElapseTextView.setText(timeToString(timeElapse/1000));
                     handler.removeCallbacks(this);
                 }else {
                     handler.postDelayed(this, 1000);
@@ -165,8 +177,8 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private String timeToString(int seconds) {
-        long minutes = TimeUnit.SECONDS.toMinutes(Long.valueOf(seconds));
+    private String timeToString(long seconds) {
+        long minutes = TimeUnit.SECONDS.toMinutes(seconds);
         long remainSeconds = seconds - TimeUnit.MINUTES.toSeconds(minutes);
         return String.format("%02d:%02d", minutes, remainSeconds);
     }
